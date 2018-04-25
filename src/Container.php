@@ -67,13 +67,13 @@ class Container implements ContainerInterface
             return $this->instance[$id];
         }
 
-        $define = $this->binding[$id];
+        $define = array_key_exists($id, $this->binding) ? $this->binding[$id] : $id;
         if ($define instanceof \Closure) {
             $instance = $this->call($define, $parameters);
         } else {
             // string
             $class = $define;
-            $params = $this->params[$id] + $parameters;
+            $params = (empty($this->params[$id]) ? [] : $this->params[$id]) + $parameters;
 
             // Case: "\\xxx\\xxx"=>"abc"
             if ($id !== $class && $this->has($class)) {
@@ -88,7 +88,7 @@ class Container implements ContainerInterface
             }
         }
 
-        if ($this->shared[$id]) {
+        if (isset($this->shared[$id]) && $this->shared[$id]) {
             $this->instance[$id] = $instance;
         }
         return $instance;
@@ -103,7 +103,7 @@ class Container implements ContainerInterface
      */
     public function call($function, $parameters=[])
     {
-        //TODO 若要实现类似 call_user_func, 则要解析 $callable. 可参考 http://php.net/manual/zh/function.call-user-func-array.php#121292
+        //参考 http://php.net/manual/zh/function.call-user-func-array.php#121292 实现解析$function
 
         $class = null;
         $method = null;
@@ -180,7 +180,7 @@ class Container implements ContainerInterface
             return null;
         }
 
-        return $this->getFuncDependencies($reflectionMethod, $parameters=[], $class);
+        return $this->getFuncDependencies($reflectionMethod, $parameters, $class);
     }
 
     protected function getFuncDependencies(\ReflectionFunctionAbstract $reflectionFunc, $parameters=[], $class="")
@@ -239,7 +239,7 @@ class Container implements ContainerInterface
 //        }
 //    }
 
-    protected function getReflectionClass($class)
+    protected function getReflectionClass($class, $ignoreException=false)
     {
         static $cache = [];
         if (isset($cache[$class])) {
@@ -249,7 +249,10 @@ class Container implements ContainerInterface
         try {
             $reflectionClass = new \ReflectionClass($class);
         } catch (\Exception $e) {
-            throw new InstantiateException($class, 0, $e);
+            if (!$ignoreException) {
+                throw new InstantiateException($class, 0, $e);
+            }
+            $reflectionClass = null;
         }
 
         return $cache[$class] = $reflectionClass;
@@ -321,7 +324,14 @@ class Container implements ContainerInterface
      */
     public function has($id)
     {
-        return array_key_exists($id, $this->binding) || array_key_exists($id, $this->raw) || array_key_exists($id, $this->instance);
+        $has = array_key_exists($id, $this->binding) || array_key_exists($id, $this->raw) || array_key_exists($id, $this->instance);
+        if (!$has) {
+            $reflectionClass = $this->getReflectionClass($id, true);
+            if (!empty($reflectionClass)) {
+                $has = true;
+            }
+        }
+        return $has;
     }
 
     public function needResolve($id)
