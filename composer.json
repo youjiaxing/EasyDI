@@ -1,7 +1,9 @@
 {
   "name": "yjx/easy-di",
   "description": "An easy dependencies inject container, which implements Psr-11.",
-
+  "type": "library",
+  "keywords": ["di", "dependency injection", "container", "ios", "psr-11", "psr11", "container-interop"],
+  "license": "MIT",
   "autoload": {
     "psr-4": {
       "EasyDI\\": "src/"
@@ -18,5 +20,8 @@
   },
   "require-dev": {
     "phpunit/phpunit": "^7.1"
-  }
+  },
+  "provide": {
+    "psr/container-implementation": "^1.0"
+  },
 }
