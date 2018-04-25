@@ -23,5 +23,5 @@
   },
   "provide": {
     "psr/container-implementation": "^1.0"
-  },
+  }
 }
