@@ -1,5 +1,5 @@
 {
-  "name": "EasyDI",
+  "name": "yjx/easy-di",
   "description": "An easy dependencies inject container, which implements Psr-11.",
 
   "autoload": {
