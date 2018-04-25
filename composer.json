@@ -1,0 +1,22 @@
+{
+  "name": "EasyDI",
+  "description": "An easy dependencies inject container, which implements Psr-11.",
+
+  "autoload": {
+    "psr-4": {
+      "EasyDI\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "EasyDI\\Test\\": "tests/"
+    }
+  },
+  "require": {
+    "psr/container": "^1.0",
+    "php": "^5.4 || ^7.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^7.1"
+  }
+}
