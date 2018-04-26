@@ -2,7 +2,7 @@
   "name": "yjx/easy-di",
   "description": "An easy dependencies inject container, which implements Psr-11.",
   "type": "library",
-  "keywords": ["di", "dependency injection", "container", "ios", "psr-11", "psr11", "container-interop"],
+  "keywords": ["di", "dependency injection", "container", "ioc", "psr-11", "psr11", "container-interop"],
   "license": "MIT",
   "autoload": {
     "psr-4": {
