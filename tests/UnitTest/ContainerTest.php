@@ -207,7 +207,7 @@ class ContainerTest extends TestCase
     public function testComplextAutoDI()
     {
         $c = new Container();
-        echo "\n".str_pad('-',60,'-')."\n";
+//        echo "\n".str_pad('-',60,'-')."\n";
         $c->set(TestC::class, TestC::class);
         $c->set(TestA::class, TestA::class);
         $c->set(TestB::class, TestB::class);
@@ -239,6 +239,25 @@ class ContainerTest extends TestCase
         $c = new Container();
         $c->set('service', TestServicePrivateConstruct::class);
         $c->get('service');
+    }
+
+    public function testCall()
+    {
+        $c = new Container();
+
+        Assert::assertSame('test', $c->call('EasyDI\Test\UnitTest\testFunc'));
+
+        Assert::assertSame('test', $c->call(function (UserManager $tmp) {
+            return 'test';
+        }));
+
+        Assert::assertSame('send to 1@1.1 with 123', $c->call([UserManager::class, 'register'], ['password'=>123, 'email'=>'1@1.1']));
+
+        Assert::assertSame('send to 1@1.1 with 123', $c->call([UserManager::class, 'staticRegister'], ['password'=>123, 'email'=>'1@1.1']));
+
+        Assert::assertSame('send to 1@1.1 with 123', $c->call([new UserManager(new Mailer()), 'register'], ['password'=>123, 'email'=>'1@1.1']));
+
+        Assert::assertSame('send to 1@1.1 with 123', $c->call([new UserManager(new Mailer()), 'staticRegister'], ['password'=>123, 'email'=>'1@1.1']));
     }
 }
 
@@ -310,4 +329,41 @@ class TestC
     {
         return "TestC";
     }
+}
+
+class Mailer
+{
+    public function mail($recipient, $content)
+    {
+        // send an email to the recipient
+    }
+}
+
+class UserManager
+{
+    private $mailer;
+
+    public function __construct(Mailer $mailer)
+    {
+        $this->mailer = $mailer;
+    }
+
+    public function register($email, $password)
+    {
+        // The user just registered, we create his account
+        // ...
+
+        // We send him an email to say hello!
+        return "send to $email with $password";
+    }
+
+    public static function staticRegister(Mailer $mailer, $email, $password)
+    {
+        return "send to $email with $password";
+    }
+}
+
+function testFunc(UserManager $manager)
+{
+    return "test";
 }

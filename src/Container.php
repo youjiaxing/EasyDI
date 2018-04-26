@@ -53,7 +53,7 @@ class Container implements ContainerInterface
      *
      * @return mixed Entry.
      */
-    public function get($id, $parameters = [])
+    public function get($id, $parameters = [], $shared=false)
     {
         if (!$this->has($id)) {
             throw new UnknownIdentifierException($id);
@@ -88,7 +88,7 @@ class Container implements ContainerInterface
             }
         }
 
-        if (isset($this->shared[$id]) && $this->shared[$id]) {
+        if ($shared || (isset($this->shared[$id]) && $this->shared[$id])) {
             $this->instance[$id] = $instance;
         }
         return $instance;
@@ -101,7 +101,7 @@ class Container implements ContainerInterface
      * @throws InvalidArgumentException 传入错误的参数
      * @throws InstantiateException
      */
-    public function call($function, $parameters=[])
+    public function call($function, $parameters=[], $shared=false)
     {
         //参考 http://php.net/manual/zh/function.call-user-func-array.php#121292 实现解析$function
 
@@ -154,6 +154,9 @@ class Container implements ContainerInterface
         } elseif ($reflectionFunc->isStatic()) {
             return $reflectionFunc->invokeArgs(null, $parameters);
         } elseif (!empty($object)) {
+            return $reflectionFunc->invokeArgs($object, $parameters);
+        } elseif (!is_null($class) && $this->has($class)) {
+            $object = $this->get($class, [], $shared);
             return $reflectionFunc->invokeArgs($object, $parameters);
         }
 
@@ -242,7 +245,7 @@ class Container implements ContainerInterface
     protected function getReflectionClass($class, $ignoreException=false)
     {
         static $cache = [];
-        if (isset($cache[$class])) {
+        if (array_key_exists($class, $cache)) {
             return $cache[$class];
         }
 
@@ -266,7 +269,7 @@ class Container implements ContainerInterface
             $class = get_class($class);
         }
 
-        if (isset($cache[$class]) && isset($cache[$class][$name])) {
+        if (array_key_exists($class, $cache) && array_key_exists($name, $cache[$class])) {
             return $cache[$class][$name];
         }
         $reflectionFunc = new \ReflectionMethod($class, $name);
@@ -285,7 +288,7 @@ class Container implements ContainerInterface
             throw new InvalidArgumentException("$name can't get reflection func.");
         }
 
-        if ($isString && array_key_exists($cache, $name)) {
+        if ($isString && array_key_exists($name, $cache)) {
             return $cache[$name];
         }
 
