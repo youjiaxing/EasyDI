@@ -253,7 +253,11 @@ class ContainerTest extends TestCase
 
         Assert::assertSame('send to 1@1.1 with 123', $c->call([UserManager::class, 'register'], ['password'=>123, 'email'=>'1@1.1']));
 
+        Assert::assertSame('send to 1@1.1 with 123', $c->call(UserManager::class."::register", ['password'=>123, 'email'=>'1@1.1']));
+
         Assert::assertSame('send to 1@1.1 with 123', $c->call([UserManager::class, 'staticRegister'], ['password'=>123, 'email'=>'1@1.1']));
+
+        Assert::assertSame('send to 1@1.1 with 123', $c->call(UserManager::class."::staticRegister", ['password'=>123, 'email'=>'1@1.1']));
 
         Assert::assertSame('send to 1@1.1 with 123', $c->call([new UserManager(new Mailer()), 'register'], ['password'=>123, 'email'=>'1@1.1']));
 

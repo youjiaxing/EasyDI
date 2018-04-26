@@ -1,6 +1,10 @@
 # EasyDI
 EasyDI是一个具有自动依赖注入的小型容器, 遵循PSR-11.
 
+具体详细介绍及讨论请[参见blog](https://blog.csdn.net/love123i/article/details/80088896)
+
+---
+
 容器提供方法:
 - `raw(string $id, mixed $value)`   
 适用于保存参数, `$value`可以是任何类型, 容器不会对其进行解析.  
@@ -150,4 +154,66 @@ $c->set(ClassB::class, ClassB::class, ['easy-di']);         // 配置ClassB�
 $c->set('advance', ClassA::class, [2=>"I really like"]);    // 配置advance服务, params 等同配置 ['say'=>"I really like"]
 $advanceService = $c->get('advance');                       // ClassA实例化所需的第2个参数$c由容器自动生成实例
 echo $advanceService->saySth().PHP_EOL; // 输出: I really like easy-di
+```
+
+### 示例3 `call()`
+```php
+```php
+class UserManager
+{
+    private $mailer;
+
+    public function __construct(Mailer $mailer)
+    {
+        $this->mailer = $mailer;
+    }
+
+    public function register($email, $password)
+    {
+        // The user just registered, we create his account
+        // ...
+
+        // We send him an email to say hello!
+        $this->mailer->mail($email, 'Hello and welcome!');
+    }
+
+    public function quickSend(Mailer $mailer, $email, $password)
+    {
+        $mailer->mail($email, 'Hello and welcome!');
+    }
+}
+
+function testFunc(UserManager $manager)
+{
+    return "test";
+}
+
+// 实例化容器
+$c = new EasyDI\Container();
+
+// 输出: 'test'
+echo $c->call('testFunc')."\n";	
+
+// 输出: 'test'
+echo $c->call(function (UserManager $tmp) {
+    return 'test';
+});	
+
+// 自动实例化UserManager对象	[$className, $methodName]
+$c->call([UserManager::class, 'register'], ['password'=>123, 'email'=>'1@1.1']);	
+
+// 自动实例化UserManager对象	$methodFullName
+$c->call(UserManager::class.'::'.'register', ['password'=>123, 'email'=>'1@1.1']);	
+
+// 调用类的静态方法	[$className, $staticMethodName]
+$c->call([UserManager::class, 'quickSend'], ['password'=>123, 'email'=>'1@1.1']);	
+
+// 使用字符串调用类的静态方法 $staticMethodFullName
+$c->call(UserManager::class.'::'.'quickSend', ['password'=>123, 'email'=>'1@1.1']);	
+
+// [$obj, $methodName] 
+$c->call([new UserManager(new Mailer()), 'register'], ['password'=>123, 'email'=>'1@1.1']);	
+
+// [$obj, $staticMethodName]
+$c->call([new UserManager(new Mailer()), 'quickSend'], ['password'=>123, 'email'=>'1@1.1']);	
 ```

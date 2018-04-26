@@ -29,13 +29,6 @@ class Container implements ContainerInterface
      */
     private $binding = [];
 
-//    private $dependenciesCirculateDetect = [];
-
-    /**
-     * 别名
-     * @var array
-     */
-//    private $alias = [];
     public function __construct()
     {
         $this->raw(ContainerInterface::class, $this);
@@ -231,16 +224,6 @@ class Container implements ContainerInterface
         }
         return $params;
     }
-
-//    protected function make($id, $parameters = [])
-//    {
-//        if ($this->has($id)) {
-//            return $this->get($id);
-//        } elseif (is_string($id)) {
-//            $reflectionClass = $this->getReflectionClass($id);
-//
-//        }
-//    }
 
     protected function getReflectionClass($class, $ignoreException=false)
     {
