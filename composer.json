@@ -4,6 +4,12 @@
   "type": "library",
   "keywords": ["di", "dependency injection", "container", "ioc", "psr-11", "psr11", "container-interop"],
   "license": "MIT",
+  "authors": [
+    {
+      "name": "YouJiaXing",
+      "email": "287009007@qq.com"
+    }
+  ],
   "autoload": {
     "psr-4": {
       "EasyDI\\": "src/"

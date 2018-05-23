@@ -137,7 +137,7 @@ class Container implements ContainerInterface, \ArrayAccess
             }
         } catch (\ReflectionException $e) {
 //            var_dump($e->getTraceAsString());
-            throw new InvalidArgumentException("class:$class method:$method", 0, $e);
+            throw new InvalidArgumentException("class:$class method:$method error={$e->getMessage()}", 0, $e);
         }
 
         $parameters = $this->getFuncDependencies($reflectionFunc, $parameters);
