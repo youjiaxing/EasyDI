@@ -136,8 +136,8 @@ class ContainerTest extends TestCase
         $c = new Container();
         $c->raw('t1', null);
         $c->set('t2', "\\Exception");
-        $c->unset('t1');
-        $c->unset('t2');
+        $c->_unset('t1');
+        $c->_unset('t2');
         Assert::assertFalse($c->has('t1'));
         Assert::assertFalse($c->has('t2'));
     }

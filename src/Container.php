@@ -335,9 +335,14 @@ class Container implements ContainerInterface, \ArrayAccess
         return array_unique(array_keys($this->instance));
     }
 
-    public function unset($id)
+    public function _unset($id)
     {
         unset($this->shared[$id], $this->binding[$id], $this->raw[$id], $this->instance[$id], $this->params[$id]);
+    }
+
+    public function remove($id)
+    {
+        $this->_unset($id);
     }
 
     public function singleton($id, $value, $params=[])
@@ -380,7 +385,7 @@ class Container implements ContainerInterface, \ArrayAccess
 
     public function raw($id, $value)
     {
-        $this->unset($id);
+        $this->_unset($id);
         $this->raw[$id] = $value;
     }
 
@@ -462,7 +467,7 @@ class Container implements ContainerInterface, \ArrayAccess
     public function offsetUnset($offset)
     {
         if (array_key_exists($offset, $this->raw)) {
-            $this->unset($offset);
+            $this->_unset($offset);
         }
     }
 }
