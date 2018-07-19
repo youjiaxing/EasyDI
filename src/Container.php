@@ -31,8 +31,8 @@ class Container implements ContainerInterface, \ArrayAccess
 
     public function __construct()
     {
-        $this->raw(ContainerInterface::class, $this);
-        $this->raw(self::class, $this);
+        $this->raw('Psr\Container\ContainerInterface', $this);
+        $this->raw('EasyDI\Container', $this);
     }
 
 
