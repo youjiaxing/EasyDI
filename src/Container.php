@@ -11,11 +11,13 @@ use Psr\Container\NotFoundExceptionInterface;
 
 class Container implements ContainerInterface, \ArrayAccess
 {
+    protected static $instance;
+
     /**
      * 保存 参数, 已实例化的对象
      * @var array
      */
-    private $instance = [];
+    private $instances = [];
 
     private $shared = [];
 
@@ -28,6 +30,25 @@ class Container implements ContainerInterface, \ArrayAccess
      * @var array
      */
     private $binding = [];
+
+
+    public static function setInstance(ContainerInterface $c = null)
+    {
+        return static::$instance = $c;
+    }
+
+    /**
+     * @return Container
+     */
+    public static function getInstance()
+    {
+        if (is_null(static::$instance)) {
+            static::$instance = new static;
+        }
+
+        return static::$instance;
+    }
+
 
     public function __construct()
     {
@@ -56,8 +77,8 @@ class Container implements ContainerInterface, \ArrayAccess
             return $this->raw[$id];
         }
 
-        if (array_key_exists($id, $this->instance)) {
-            return $this->instance[$id];
+        if (array_key_exists($id, $this->instances)) {
+            return $this->instances[$id];
         }
 
         $define = array_key_exists($id, $this->binding) ? $this->binding[$id] : $id;
@@ -82,7 +103,7 @@ class Container implements ContainerInterface, \ArrayAccess
         }
 
         if ($shared || (isset($this->shared[$id]) && $this->shared[$id])) {
-            $this->instance[$id] = $instance;
+            $this->instances[$id] = $instance;
         }
         return $instance;
     }
@@ -310,7 +331,7 @@ class Container implements ContainerInterface, \ArrayAccess
      */
     public function has($id)
     {
-        $has = array_key_exists($id, $this->binding) || array_key_exists($id, $this->raw) || array_key_exists($id, $this->instance);
+        $has = array_key_exists($id, $this->binding) || array_key_exists($id, $this->raw) || array_key_exists($id, $this->instances);
         if (!$has) {
             $reflectionClass = $this->getReflectionClass($id, true);
             if (!empty($reflectionClass)) {
@@ -322,22 +343,22 @@ class Container implements ContainerInterface, \ArrayAccess
 
     public function needResolve($id)
     {
-        return !(array_key_exists($id, $this->raw) && (array_key_exists($id, $this->instance) && $this->shared[$id]));
+        return !(array_key_exists($id, $this->raw) && (array_key_exists($id, $this->instances) && $this->shared[$id]));
     }
 
     public function keys()
     {
-        return array_unique(array_merge(array_keys($this->raw), array_keys($this->binding), array_keys($this->instance)));
+        return array_unique(array_merge(array_keys($this->raw), array_keys($this->binding), array_keys($this->instances)));
     }
 
     public function instanceKeys()
     {
-        return array_unique(array_keys($this->instance));
+        return array_unique(array_keys($this->instances));
     }
 
     public function _unset($id)
     {
-        unset($this->shared[$id], $this->binding[$id], $this->raw[$id], $this->instance[$id], $this->params[$id]);
+        unset($this->shared[$id], $this->binding[$id], $this->raw[$id], $this->instances[$id], $this->params[$id]);
     }
 
     public function remove($id)
@@ -404,7 +425,6 @@ class Container implements ContainerInterface, \ArrayAccess
     }
 
     /**
-     * 仅针对 raw
      * Whether a offset exists
      * @link http://php.net/manual/en/arrayaccess.offsetexists.php
      * @param mixed $offset <p>
@@ -418,11 +438,10 @@ class Container implements ContainerInterface, \ArrayAccess
      */
     public function offsetExists($offset)
     {
-        return array_key_exists($offset, $this->raw);
+        return $this->has($offset);
     }
 
     /**
-     * 仅针对 raw
      * Offset to retrieve
      * @link http://php.net/manual/en/arrayaccess.offsetget.php
      * @param mixed $offset <p>
@@ -433,11 +452,10 @@ class Container implements ContainerInterface, \ArrayAccess
      */
     public function offsetGet($offset)
     {
-        return array_key_exists($offset, $this->raw) ? $this->raw[$offset] : null;
+        return $this->get($offset);
     }
 
     /**
-     * 仅针对 raw
      * Offset to set
      * @link http://php.net/manual/en/arrayaccess.offsetset.php
      * @param mixed $offset <p>
@@ -451,11 +469,10 @@ class Container implements ContainerInterface, \ArrayAccess
      */
     public function offsetSet($offset, $value)
     {
-        $this->raw($offset, $value);
+        $this->set($offset, $value);
     }
 
     /**
-     * 仅针对 raw
      * Offset to unset
      * @link http://php.net/manual/en/arrayaccess.offsetunset.php
      * @param mixed $offset <p>
@@ -466,8 +483,6 @@ class Container implements ContainerInterface, \ArrayAccess
      */
     public function offsetUnset($offset)
     {
-        if (array_key_exists($offset, $this->raw)) {
-            $this->_unset($offset);
-        }
+        $this->_unset($offset);
     }
 }
