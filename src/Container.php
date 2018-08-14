@@ -50,10 +50,13 @@ class Container implements ContainerInterface, \ArrayAccess
     }
 
 
-    public function __construct()
+    public function __construct($singleton = true)
     {
         $this->raw('Psr\Container\ContainerInterface', $this);
         $this->raw('EasyDI\Container', $this);
+        if ($singleton) {
+            static::setInstance($this);
+        }
     }
 
 
@@ -89,7 +92,7 @@ class Container implements ContainerInterface, \ArrayAccess
             $class = $define;
             $params = (empty($this->params[$id]) ? [] : $this->params[$id]) + $parameters;
 
-            // Case: "\\xxx\\xxx"=>"abc"
+            // Case: "\\xxx\\xxx"=>"abc"    别名功能支持
             if ($id !== $class && $this->has($class)) {
                 $instance = $this->get($class, $params);
             } else {
